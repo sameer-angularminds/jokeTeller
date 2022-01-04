@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jokeTeller</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div class="container" >
+        <div class="row text-center py-3">
+            <div class="col">
+                <h2><strong>Joke Teller</strong></h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card card border-info mb-3" style="border-radius: 15px; background-color: rgb(238, 234, 228);">
+                    <div class="card-body">
+                        <form action="" [formGroup]="form" (ngSubmit)="sendData()" class="myForm">
+                            <div class="row m-auto py-2">
+                                <div class="col form-group">
+                                    <label>
+                                        <strong>Select category / categories :</strong></label>
+                                    <div>
+                                        <label class="">
+                                            <input type="radio" name="categories" value="Any"
+                                                formControlName="categories" checked="true" (change)="showCustom=false" > Any
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <label class="">
+                                            <input type="radio" value="custom" name="categories" (change)="showCustom=!showCustom"> Custom:
+                                        </label>
+                                        <select class="form-control mt-1 categories" name="" formControlName="categories" *ngIf="showCustom">
+                                            <option value="Programming">Programming</option>
+                                            <option value="Miscellaneous">Misc</option>
+                                            <option value="Dark">Dark</option>
+                                            <option value="Pun">Pun</option>
+                                            <option value="Spooky">Spooky</option>
+                                            <option value="Christmas">Christmas</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row py-2">
+                                <div class="col form-group">
+                                    <label><strong>Select language :</strong></label>
+                                    <select class="form-control mt-1 changeLang" name="" (change)="changeLang($event)" 
+                                        formControlName="lang">
+                                        <option value="cs">cs - Czech</option>
+                                        <option value="de">de - German</option>
+                                        <option value="en">en - English</option>
+                                        <option value="es">es - Spanish</option>
+                                        <option value="fr">fr - French</option>
+                                        <option value="pt">pt - Portuguese</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row py-2">
+                                <div class="col form-group">
+                                    <label><strong>Select flags to blacklist :</strong></label>
+                                    <div formArrayName="flags">
+                                        <div *ngFor="let flag of flagArr.controls; let i=index" [formGroupName]="i">
+                                            <input type="checkbox" formControlName="value">
+                                            <label class="mr-2 px-2">
+                                                 {{flag.value.name}} </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row py-2" >
+                                <div class="col form-group">
+                                    <label><strong>Select at least one joke type :</strong></label>
+                                    <div formArrayName="type">
+                                        <div *ngFor="let type of typeArr.controls; let i=index" [formGroupName]="i">
+                                            <input type="checkbox" formControlName="value" id="typeCount" (change)="typeCount($event)" class="typeCount">
+                                            <label class="mr-2 px-2">
+                                                 {{type.value.name}}</label>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="submitted && this.count == 2">
+                                        <small *ngIf="submitted && this.count == 2" class="text-danger">
+                                            Plz select atleast one type.
+                                       </small>
+                                   </div>
+                                </div>
+                            </div>
+                            <div class="row py-2">
+                                <div class="col form-group">
+                                    <label><strong>Search for a joke that
+                                            contains this search string :</strong></label>
+                                    <input type="text" class="form-control mt-1" formControlName="contains" placeholder="(Optional)">
+                                </div>
+                            </div>
+
+                            <div class="row py-2">
+                                <div class="col form-group">
+                                    <label><strong>Search for a joke in this ID range :</strong></label>
+                                    <div class="d-flex px-2 mt-1">
+                                        <span> (Optional) </span>
+                                        <p class="ml-2 px-2">From :</p>
+                                        <input type="number" class="ml-1 form-control w-25 mr-3" min="0" formControlName="start">
+                                        <p class="px-2"> To : </p>
+                                        <input type="number" class="ml-3 form-control w-25" min="0"  formControlName="end">
+                                    </div>
+                                    <div *ngIf="form.value.start>form.value.end">
+                                        <small *ngIf="form.value.start>form.value.end" class="text-danger">
+                                           Invalid Range
+                                       </small>
+                                   </div>
+                                </div>
+                            </div>
+                            <div class="row py-2">
+                                <div class="col form-group">
+                                    <label><strong>Amount of jokes :</strong></label>
+                                    <input type="number" min="1" formControlName="amount" [ngClass]="{'isInvalid':submitted&&(form.value.amount<1 || form.value.amount>10)}" class="form-control mt-1" >
+                                <div *ngIf="submitted&&(form.value.amount<1 || form.value.amount>10)">
+                                     <small *ngIf="submitted&&form.value.amount<1" class="text-danger">
+                                         Min amount is 1
+                                    </small>
+                                    <small *ngIf="submitted&&form.value.amount>10" class="text-danger">
+                                        Max amount is 10
+                                   </small>
+                                </div>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="row py-2">
+                            <div class="col">
+                                <label><strong>URL :</strong></label>
+                                <div class="mt-1">
+                                    <button type="button" class="btn btn-primary" id="resetButton" (click)="resetForm()">Reset Form</button>
+                                    <button type="button" class="btn btn-primary mx-3" id="sendButton" (click)="sendData()">Send
+                                        Request:</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- <div class="row mb-3" *ngIf="showDiv">
+            <div class="col">
+                <div class="card border-info text-center" style="border-radius: 15px;">
+                    <div class="card-header">
+                      Your Joke is Here
+                    </div>
+                    <div class="card-body">
+                        <div *ngIf="jokes.type!='twopart'">
+                            <p class="card-text">{{jokes.joke}}</p>
+                        </div>
+                        <div *ngIf="jokes.type=='twopart'">
+                          <p class="card-text">{{jokes.setup}}</p>
+                          <button *ngIf="!showDelivery" class="btn btn-primary"(click)="showDelivery=!showDelivery">Show answer</button>
+                          <div *ngIf="showDelivery">
+                            <p class="card-text">{{jokes.delivery}}</p>
+                          </div>
+                        </div>
+                    </div>
+                    <div *ngFor="let j of jokes.jokes;let i=index">
+                         <li>{{j.setup}}</li> -->
+                        <!-- <div class="card-body">
+                            <div *ngIf="j.type!='twopart'">
+                                <p class="card-text">{{j.joke}}</p>
+                            </div>
+                            <div *ngIf="j.type=='twopart'">
+                              <p class="card-text">{{j.setup}}</p>
+                              <button *ngIf="j.delivery&&choosenIndex!=i" class="btn btn-primary" (click)="showJokeDelivery(i)">Show answer</button>
+                              <div *ngIf="choosenIndex==i">
+                                <p class="card-text">{{j.delivery}}</p>
+                              </div>
+                            </div>
+                          </div> <hr> 
+                    </div>
+                 </div>
+            </div>
+        </div>
+        {{jokes|json}} -->
+    </div>
+
+</body>
+
+</html>
